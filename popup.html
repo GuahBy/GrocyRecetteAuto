@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grocy Recipe Importer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 350px;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .status.info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #90caf9;
+        }
+        
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #81c784;
+        }
+        
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef5350;
+        }
+        
+        .status.loading {
+            background: #fff3e0;
+            color: #e65100;
+            border: 1px solid #ffb74d;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .settings-link {
+            display: block;
+            text-align: center;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        
+        .settings-link:hover {
+            text-decoration: underline;
+        }
+        
+        .recipe-preview {
+            margin: 15px 0;
+            padding: 12px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            font-size: 13px;
+            display: none;
+        }
+        
+        .recipe-preview h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .recipe-preview p {
+            margin: 4px 0;
+            color: #666;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .config-section {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .config-section.show {
+            display: block;
+        }
+        
+        label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+        
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍳 Grocy Recipe Importer</h1>
+        
+        <div id="status" class="status"></div>
+        
+        <div id="recipePreview" class="recipe-preview"></div>
+        
+        <button id="importBtn">
+            Importer cette recette
+        </button>
+        
+        <button id="previewBtn" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            Prévisualiser
+        </button>
+        
+        <a href="#" id="settingsLink" class="settings-link">⚙️ Configuration</a>
+        
+        <div id="configSection" class="config-section">
+            <label for="apiUrl">URL de l'API</label>
+            <input type="text" id="apiUrl" placeholder="http://localhost:5000">
+            
+            <label for="grocyUrl">URL Grocy</label>
+            <input type="text" id="grocyUrl" placeholder="http://100.83.155.21:9283">
+            
+            <label for="grocyApiKey">Clé API Grocy</label>
+            <input type="password" id="grocyApiKey" placeholder="Votre clé API">
+            
+            <button id="saveConfig" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                Sauvegarder
+            </button>
+        </div>
+    </div>
+    
+    <script src="popup.js"></script>
+</body>
+</html>

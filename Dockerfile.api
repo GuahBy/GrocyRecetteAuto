@@ -1,0 +1,21 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copier et installer les dépendances
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir flask flask-cors gunicorn
+
+# Copier le code
+COPY *.py ./
+
+# Exposer le port
+EXPOSE 5000
+
+# Variables d'environnement par défaut
+ENV GROCY_URL=http://localhost:9283
+ENV GROCY_API_KEY=""
+
+# Démarrer avec Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--timeout", "120", "--access-logfile", "-", "api:app"]
