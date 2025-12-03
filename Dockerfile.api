@@ -7,8 +7,11 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir flask flask-cors gunicorn
 
-# Copier le code
+# Copier le code Python
 COPY *.py ./
+
+# Copier le dossier templates
+COPY templates/ ./templates/
 
 # Exposer le port
 EXPOSE 5000
