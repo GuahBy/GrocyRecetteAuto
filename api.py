@@ -4,11 +4,12 @@ API Flask pour importer des recettes dans Grocy
 Exposée pour être appelée par l'extension navigateur
 """
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from recipe_extractor import RecipeExtractor
 from grocy_client import GrocyClient
 import os
+import tempfile
 
 app = Flask(__name__)
 CORS(app)  # Permet les requêtes cross-origin depuis l'extension
@@ -16,6 +17,11 @@ CORS(app)  # Permet les requêtes cross-origin depuis l'extension
 # Configuration depuis variables d'environnement
 GROCY_URL = os.getenv('GROCY_URL', 'http://localhost:9283')
 GROCY_API_KEY = os.getenv('GROCY_API_KEY', '')
+
+@app.route('/')
+def index():
+    """Page d'accueil avec interface web"""
+    return render_template('index.html')
 
 @app.route('/health', methods=['GET'])
 def health():
@@ -25,11 +31,12 @@ def health():
 @app.route('/api/import', methods=['POST'])
 def import_recipe():
     """
-    Importe une recette depuis une URL
+    Importe une recette depuis une URL ou du HTML
     
     Body JSON:
     {
-        "url": "https://www.marmiton.org/...",
+        "url": "https://www.marmiton.org/...",  // OU
+        "html": "<html>...</html>",  // HTML de la recette
         "grocy_url": "http://localhost:9283",  // optionnel
         "grocy_api_key": "..."  // optionnel
     }
@@ -37,13 +44,19 @@ def import_recipe():
     try:
         data = request.get_json()
         
-        if not data or 'url' not in data:
+        if not data:
             return jsonify({
                 'success': False,
-                'error': 'URL manquante dans la requête'
+                'error': 'Aucune donnée fournie'
             }), 400
         
-        url = data['url']
+        # Vérifier qu'on a soit une URL soit du HTML
+        if 'url' not in data and 'html' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'URL ou HTML manquant'
+            }), 400
+        
         grocy_url = data.get('grocy_url', GROCY_URL)
         grocy_api_key = data.get('grocy_api_key', GROCY_API_KEY)
         
@@ -54,9 +67,22 @@ def import_recipe():
             }), 400
         
         # Étape 1 : Extraction de la recette
-        print(f"📥 Import demandé pour: {url}")
         extractor = RecipeExtractor()
-        recipe_data = extractor.extract(url)
+        
+        if 'url' in data:
+            print(f"📥 Import depuis URL: {data['url']}")
+            recipe_data = extractor.extract(data['url'])
+        else:
+            print(f"📥 Import depuis HTML ({len(data['html'])} caractères)")
+            # Créer un fichier temporaire avec le HTML
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as f:
+                f.write(data['html'])
+                temp_file = f.name
+            
+            try:
+                recipe_data = extractor.extract(temp_file)
+            finally:
+                os.unlink(temp_file)
         
         print(f"✓ Recette extraite: {recipe_data['title']}")
         
@@ -99,23 +125,40 @@ def preview_recipe():
     
     Body JSON:
     {
-        "url": "https://www.marmiton.org/..."
+        "url": "https://www.marmiton.org/..."  // OU
+        "html": "<html>...</html>"
     }
     """
     try:
         data = request.get_json()
         
-        if not data or 'url' not in data:
+        if not data:
             return jsonify({
                 'success': False,
-                'error': 'URL manquante dans la requête'
+                'error': 'Aucune donnée fournie'
             }), 400
         
-        url = data['url']
+        if 'url' not in data and 'html' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'URL ou HTML manquant'
+            }), 400
         
         # Extraction de la recette
         extractor = RecipeExtractor()
-        recipe_data = extractor.extract(url)
+        
+        if 'url' in data:
+            recipe_data = extractor.extract(data['url'])
+        else:
+            # Créer un fichier temporaire avec le HTML
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as f:
+                f.write(data['html'])
+                temp_file = f.name
+            
+            try:
+                recipe_data = extractor.extract(temp_file)
+            finally:
+                os.unlink(temp_file)
         
         return jsonify({
             'success': True,
