@@ -24,7 +24,7 @@ Ce module permet d'importer des recettes depuis Instagram Reels en :
 ### Via API
 
 ```bash
-curl -X POST http://localhost:5000/api/import/instagram \
+curl -X POST http://ton-server:5000/api/import/instagram \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://www.instagram.com/reel/ABC123/"
