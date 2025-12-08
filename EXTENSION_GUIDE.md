@@ -16,14 +16,14 @@ cd /mnt/user-data/outputs/grocy-recipe-importer
 pip3 install flask flask-cors
 
 # Définir les variables d'environnement
-export GROCY_URL="http://100.83.155.21:9283"
-export GROCY_API_KEY="6GjzdHjcghEXlDkaGmpiC7sn2T2NxwGJzO8OEjYaKFW3FkLxmc"
+export GROCY_URL="http://ton-serveur:9283"
+export GROCY_API_KEY="TA-CLE-API"
 
 # Lancer l'API
 python3 api.py
 ```
 
-L'API sera accessible sur `http://localhost:5000`
+L'API sera accessible sur `http://ton-serveur:5000`
 
 **Pour production (avec Docker)** : Voir ci-dessous
 
@@ -174,7 +174,7 @@ def check_auth():
 
 ```bash
 # Test health
-curl http://localhost:5000/health
+curl http://ton-serveur:5000/health
 
 # Test preview
 curl -X POST http://localhost:5000/api/preview \
