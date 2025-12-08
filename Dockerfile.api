@@ -9,14 +9,18 @@ RUN apt-get update && apt-get install -y \
 
 # Copier et installer les dépendances Python
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir \
-        flask \
-        flask-cors \
-        gunicorn \
-        yt-dlp \
-        openai-whisper \
-        torch --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Installer les dépendances API
+RUN pip install --no-cache-dir \
+    flask \
+    flask-cors \
+    gunicorn \
+    yt-dlp \
+    openai-whisper
+
+# Installer PyTorch CPU (séparé pour éviter les conflits)
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 
 # Copier le code Python
 COPY *.py ./
