@@ -60,7 +60,7 @@ python3 recipe_parser.py
 
 ```bash
 # Lancer l'API en mode dev
-export GROCY_URL="http://100.83.155.21:9283"
+export GROCY_URL="http://ton-serveur:9283"
 export GROCY_API_KEY="ta_clé"
 
 python3 api.py
@@ -69,7 +69,7 @@ python3 api.py
 Ouvre un autre terminal et teste :
 
 ```bash
-curl -X POST http://localhost:5000/api/import/instagram \
+curl -X POST http://ton-serveur:5000/api/import/instagram \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://www.instagram.com/reel/ABC123/"
@@ -85,7 +85,7 @@ curl -X POST http://localhost:5000/api/import/instagram \
     "recipe_id": 6,
     "title": "Nom de la recette",
     "ingredients_count": 5,
-    "grocy_url": "http://100.83.155.21:9283/#recipe/6"
+    "grocy_url": "http://ton-serveur:9283/#recipe/6"
   }
 }
 ```
@@ -93,7 +93,7 @@ curl -X POST http://localhost:5000/api/import/instagram \
 ### 4. Tester l'interface web
 
 1. Garde l'API lancée (`python3 api.py`)
-2. Va sur `http://localhost:5000`
+2. Va sur `http://ton-serveur:5000`
 3. Onglet **"📸 Instagram"**
 4. Colle une URL de Reel
 5. Clique **"Importer"**
