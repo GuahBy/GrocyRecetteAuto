@@ -226,7 +226,26 @@ def import_instagram_reel():
         
         # Étape 1 : Télécharger le Reel
         print("\n[1/5] Téléchargement du Reel...")
-        scraper = InstagramScraper()
+        
+        # Chercher le fichier cookies Instagram
+        cookies_file = None
+        possible_paths = [
+            '/app/cookies/instagram.txt',  # Dans Docker
+            './cookies/instagram.txt',      # En local
+            os.path.expanduser('~/cookies/instagram.txt'),
+        ]
+        
+        for path in possible_paths:
+            if os.path.exists(path):
+                cookies_file = path
+                print(f"  ℹ️ Utilisation des cookies : {cookies_file}")
+                break
+        
+        if not cookies_file:
+            print("  ⚠️ Aucun fichier cookies trouvé, tentative sans authentification...")
+            print("  💡 Si ça échoue, voir INSTAGRAM.md pour configurer les cookies")
+        
+        scraper = InstagramScraper(cookies_file=cookies_file)
         reel_data = scraper.download_reel(url)
         
         # Étape 2 : Transcrire l'audio

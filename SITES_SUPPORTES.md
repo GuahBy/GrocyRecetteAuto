@@ -51,7 +51,7 @@ Voici une liste de sites français populaires compatibles avec l'outil :
 ```bash
 # Mode dry-run pour tester sans importer
 python main.py "URL_DU_SITE" \
-  --grocy-url http://ton-serveur:9283 \
+  --grocy-url http://localhost:9283 \
   --api-key VOTRE_CLE \
   --dry-run
 ```
@@ -103,7 +103,7 @@ Légende : ✅ Parfait | ⚠️ Partiel | ❌ Non supporté
 ```bash
 python main.py \
   "https://www.marmiton.org/recettes/recette_poulet-au-curry_166854.aspx" \
-  --grocy-url http://ton-serveur:9283 \
+  --grocy-url http://localhost:9283 \
   --api-key votre_clé
 ```
 
@@ -111,7 +111,7 @@ python main.py \
 ```bash
 python main.py \
   "https://www.750g.com/tarte-aux-pommes-r12345.htm" \
-  --grocy-url http://ton-serveur:9283 \
+  --grocy-url http://localhost:9283 \
   --api-key votre_clé
 ```
 
@@ -119,7 +119,7 @@ python main.py \
 ```bash
 python main.py \
   "https://www.cuisineaz.com/recettes/gratin-dauphinois-12345.aspx" \
-  --grocy-url http://ton-serveur:9283 \
+  --grocy-url http://localhost:9283 \
   --api-key votre_clé
 ```
 

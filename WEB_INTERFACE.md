@@ -5,6 +5,7 @@
 Une fois l'API démarrée, accède à l'interface web :
 
 - **En local :** `http://localhost:5000`
+- **Via Tailscale :** `http://100.83.155.21:5000`
 - **Via ton serveur :** `http://ton-ip:5000`
 
 ## ✨ Fonctionnalités

@@ -50,7 +50,7 @@ Si tu vois "Test OK!" → **Ça marche !**
 ```bash
 # Remplace par ton URL et ta clé API
 python3 main.py exemple-recette.html \
-  --grocy-url http://ton-serveur:9283 \
+  --grocy-url http://localhost:9283 \
   --api-key TA_CLE_API_ICI \
   --dry-run
 ```
@@ -65,7 +65,7 @@ Tu devrais voir un affichage coloré avec :
 
 ```bash
 python3 main.py "https://www.marmiton.org/recettes/recette_crepes-faciles_24622.aspx" \
-  --grocy-url http://ton-serveur:9283 \
+  --grocy-url http://localhost:9283 \
   --api-key TA_CLE_API \
   --dry-run
 ```
@@ -75,7 +75,7 @@ python3 main.py "https://www.marmiton.org/recettes/recette_crepes-faciles_24622.
 ```bash
 # SANS --dry-run → va vraiment importer dans Grocy
 python3 main.py exemple-recette.html \
-  --grocy-url http://ton-serveur:9283 \
+  --grocy-url http://localhost:9283 \
   --api-key TA_CLE_API
 ```
 
@@ -109,7 +109,7 @@ python3 test.py
 python3 -c "from recipe_extractor import RecipeExtractor; print(RecipeExtractor().extract('exemple-recette.html')['title'])"
 
 # Test avec vraie URL (remplace TA_CLE)
-python3 main.py "https://www.marmiton.org/recettes/recette_crepes-faciles_24622.aspx" --grocy-url http://ton-serveur:9283 --api-key TA_CLE --dry-run
+python3 main.py "https://www.marmiton.org/recettes/recette_crepes-faciles_24622.aspx" --grocy-url http://localhost:9283 --api-key TA_CLE --dry-run
 ```
 
 ---
@@ -126,7 +126,7 @@ python3 -m pip install -r requirements.txt
 **"Impossible de se connecter à Grocy"**
 ```bash
 # Teste manuellement
-curl http://ton-serveur:9283/api/system/info
+curl http://localhost:9283/api/system/info
 
 # Vérifie ton URL et ton port (9283 ou 8081 ?)
 ```

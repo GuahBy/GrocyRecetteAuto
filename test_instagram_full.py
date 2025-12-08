@@ -31,7 +31,27 @@ def test_instagram_import(url: str, grocy_url: str, grocy_api_key: str):
         # Étape 1 : Télécharger le Reel
         print("[1/5] 📥 Téléchargement du Reel Instagram...")
         print("-" * 60)
-        scraper = InstagramScraper()
+        
+        # Chercher le fichier cookies Instagram
+        cookies_file = None
+        possible_paths = [
+            './cookies/instagram.txt',
+            os.path.expanduser('~/cookies/instagram.txt'),
+            '/app/cookies/instagram.txt',
+        ]
+        
+        for path in possible_paths:
+            if os.path.exists(path):
+                cookies_file = path
+                print(f"  ℹ️ Utilisation des cookies : {cookies_file}")
+                break
+        
+        if not cookies_file:
+            print("  ⚠️ Aucun fichier cookies trouvé")
+            print("  💡 Instagram peut bloquer sans authentification")
+            print("  📖 Voir INSTAGRAM.md section 'Cookies' pour configurer")
+        
+        scraper = InstagramScraper(cookies_file=cookies_file)
         reel_data = scraper.download_reel(url)
         
         print("\n✅ Reel téléchargé:")

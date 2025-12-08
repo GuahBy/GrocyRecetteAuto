@@ -13,14 +13,16 @@ from pathlib import Path
 
 
 class InstagramScraper:
-    def __init__(self, download_dir: str = None):
+    def __init__(self, download_dir: str = None, cookies_file: str = None):
         """
         Initialise le scraper Instagram
         
         Args:
             download_dir: Dossier pour télécharger les vidéos (None = temp)
+            cookies_file: Chemin vers le fichier cookies Instagram (optionnel)
         """
         self.download_dir = download_dir or tempfile.gettempdir()
+        self.cookies_file = cookies_file
         
     def download_reel(self, url: str) -> Dict:
         """
@@ -89,8 +91,13 @@ class InstagramScraper:
             'yt-dlp',
             '--dump-json',
             '--no-playlist',
-            url
         ]
+        
+        # Ajouter les cookies si disponibles
+        if self.cookies_file and os.path.exists(self.cookies_file):
+            cmd.extend(['--cookies', self.cookies_file])
+        
+        cmd.append(url)
         
         try:
             result = subprocess.run(
@@ -115,8 +122,13 @@ class InstagramScraper:
             '-f', 'best',  # Meilleure qualité
             '--no-playlist',
             '-o', output_template,
-            url
         ]
+        
+        # Ajouter les cookies si disponibles
+        if self.cookies_file and os.path.exists(self.cookies_file):
+            cmd.extend(['--cookies', self.cookies_file])
+        
+        cmd.append(url)
         
         try:
             result = subprocess.run(

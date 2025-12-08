@@ -1,5 +1,51 @@
 # 📸 Import depuis Instagram Reels
 
+## 🔒 IMPORTANT : Authentification Instagram
+
+Instagram bloque les téléchargements non-authentifiés. Tu dois **exporter tes cookies Instagram** pour que ça fonctionne.
+
+### 🍪 Configuration des cookies (OBLIGATOIRE)
+
+#### Étape 1 : Installer une extension navigateur
+
+**Chrome/Brave :**
+1. Va sur : https://chrome.google.com/webstore/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc
+2. Installe l'extension "Get cookies.txt LOCALLY"
+
+**Firefox :**
+1. Va sur : https://addons.mozilla.org/fr/firefox/addon/cookies-txt/
+2. Installe l'extension "cookies.txt"
+
+#### Étape 2 : Exporter les cookies
+
+1. Va sur **https://www.instagram.com** et **connecte-toi**
+2. Clique sur l'**icône de l'extension** dans ta barre d'outils
+3. Clique sur **"Export"** ou **"Download"**
+4. Sauvegarde le fichier sous le nom `instagram.txt`
+
+#### Étape 3 : Mettre les cookies sur le serveur
+
+```bash
+# Sur le serveur
+cd ~/docker/GrocyRecetteAuto
+mkdir -p cookies
+
+# Upload le fichier (via scp, FileZilla, ou nano)
+nano cookies/instagram.txt
+# Colle le contenu du fichier cookies puis Ctrl+O, Enter, Ctrl+X
+```
+
+#### Étape 4 : Rebuild Docker
+
+```bash
+cd ~/docker
+docker compose restart recipe-api
+```
+
+✅ **C'est tout !** Le système détectera automatiquement les cookies.
+
+---
+
 ## 🎯 Fonctionnalités
 
 Ce module permet d'importer des recettes depuis Instagram Reels en :
@@ -24,7 +70,7 @@ Ce module permet d'importer des recettes depuis Instagram Reels en :
 ### Via API
 
 ```bash
-curl -X POST http://ton-server:5000/api/import/instagram \
+curl -X POST http://localhost:5000/api/import/instagram \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://www.instagram.com/reel/ABC123/"
