@@ -40,7 +40,7 @@ pip install -r requirements.txt
 ```bash
 python main.py \
   "https://www.marmiton.org/recettes/recette_poulet-au-curry_12345.aspx" \
-  --grocy-url http://localhost:9283 \
+  --grocy-url http://ton-serveur:9283 \
   --api-key VOTRE_CLE_API
 ```
 
@@ -49,7 +49,7 @@ python main.py \
 ```bash
 python main.py \
   "/chemin/vers/recette.html" \
-  --grocy-url http://localhost:9283 \
+  --grocy-url http://ton-serveur:9283 \
   --api-key VOTRE_CLE_API
 ```
 
@@ -58,7 +58,7 @@ python main.py \
 ```bash
 python main.py \
   "https://www.750g.com/recette-tarte-aux-pommes.htm" \
-  --grocy-url http://localhost:9283 \
+  --grocy-url http://ton-serveur:9283 \
   --api-key VOTRE_CLE_API \
   --dry-run
 ```
@@ -104,7 +104,7 @@ python main.py \
 # 2. J'importe le fichier local
 python main.py \
   ~/Downloads/recette-tiramisu.html \
-  --grocy-url http://localhost:9283 \
+  --grocy-url http://ton-serveur:9283 \
   --api-key abc123def456
 ```
 
@@ -138,7 +138,7 @@ docker-compose run recipe-importer python main.py "https://..." --grocy-url $GRO
 Pour éviter de taper l'URL et la clé API à chaque fois :
 
 ```bash
-export GROCY_URL="http://localhost:9283"
+export GROCY_URL="http://ton-serveur:9283"
 export GROCY_API_KEY="votre_clé_api"
 
 # Puis utilisez :
@@ -152,7 +152,7 @@ Créez un script `import-recette.sh` :
 ```bash
 #!/bin/bash
 python /chemin/vers/grocy-recipe-importer/main.py "$1" \
-  --grocy-url "http://localhost:9283" \
+  --grocy-url "http://ton-serveur:9283" \
   --api-key "VOTRE_CLE"
 ```
 
@@ -185,7 +185,7 @@ N'hésite pas à améliorer le code ! Les PRs sont les bienvenues.
 ### Erreur "Impossible de se connecter à Grocy"
 
 - Vérifiez que Grocy est bien accessible à l'URL fournie
-- Testez dans votre navigateur : `http://localhost:9283/api/system/info`
+- Testez dans votre navigateur : `http://ton-serveur:9283/api/system/info`
 - Vérifiez votre clé API
 
 ### Erreur lors de l'extraction
