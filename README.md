@@ -5,7 +5,7 @@ Outil Python pour importer automatiquement des recettes depuis des sites web ou 
 ## Fonctionnalités
 
 - ✅ Support de **250+ sites de recettes** (Marmiton, 750g, Cuisine AZ, etc.)
-- ✅ Import depuis **URL** ou **fichier HTML local**
+- ✅ Import depuis **URL** ou **fichier HTML local** ou **Reels instagram** (transcription de l'audio, scraping de la description, extraction des données)
 - ✅ Extraction automatique des ingrédients, instructions, temps de préparation
 - ✅ Interface CLI simple et colorée
 - ✅ Mode dry-run pour prévisualiser avant import
@@ -32,6 +32,11 @@ pip install -r requirements.txt
 2. Allez dans **Manage API keys** (icône clé en haut à droite)
 3. Cliquez sur **Add**
 4. Copiez la clé générée
+
+## Prérequis pour les reels instagram: 
+1. Connectez-vous sur instagram depuis votre navigateur
+2. Exporter les cookies de connexion (Get cookies.txt LOCALLY plugin chrome)
+3. Déplacer les cookies (instagram.txt) dans GrocyRecetteAuto/cookies
 
 ## Utilisation
 
@@ -93,8 +98,8 @@ L'outil utilise `recipe-scrapers` qui supporte automatiquement plus de 250 sites
 # Je trouve une recette sur Marmiton
 python main.py \
   "https://www.marmiton.org/recettes/recette_blanquette-de-veau_12345.aspx" \
-  --grocy-url http://192.168.1.100:9283 \
-  --api-key abc123def456
+  --grocy-url http://ton-serveur:9283 \
+  --api-key ta-cle-api
 ```
 
 ### Scénario 2 : Sauvegarder puis importer
@@ -104,8 +109,8 @@ python main.py \
 # 2. J'importe le fichier local
 python main.py \
   ~/Downloads/recette-tiramisu.html \
-  --grocy-url http://localhost:9283 \
-  --api-key abc123def456
+  --grocy-url http://ton-serveur:9283 \
+  --api-key ta-cle-api
 ```
 
 ## Intégration Docker
@@ -113,16 +118,21 @@ python main.py \
 Vous pouvez ajouter ce service à votre docker-compose pour un accès simplifié :
 
 ```yaml
-  recipe-importer:
-    build: ./grocy-recipe-importer
-    container_name: recipe-importer
-    environment:
-      - GROCY_URL=http://app:80
-      - GROCY_API_KEY=votre_clé
-    volumes:
-      - ./recettes:/recettes
-    restart: "no"
-    # Utilisé comme outil CLI, pas de daemon
+  recipe-api:
+   build:
+     context: ./GrocyRecetteAuto
+     dockerfile: Dockerfile.api
+   container_name: recipe-api
+   environment:
+     - GROCY_URL=http://grocy:80
+     - GROCY_API_KEY=ta-clé-url
+   ports:
+     - 5000:5000
+   volumes:
+     - ./GrocyRecetteAuto/cookies:/app/cookies
+   restart: unless-stopped
+   depends_on:
+     - grocy
 ```
 
 Puis :
@@ -138,8 +148,8 @@ docker-compose run recipe-importer python main.py "https://..." --grocy-url $GRO
 Pour éviter de taper l'URL et la clé API à chaque fois :
 
 ```bash
-export GROCY_URL="http://localhost:9283"
-export GROCY_API_KEY="votre_clé_api"
+export GROCY_URL="http://ton-serveur:9283"
+export GROCY_API_KEY="ta-clé-api"
 
 # Puis utilisez :
 python main.py "https://recette.com/..."
@@ -152,8 +162,8 @@ Créez un script `import-recette.sh` :
 ```bash
 #!/bin/bash
 python /chemin/vers/grocy-recipe-importer/main.py "$1" \
-  --grocy-url "http://localhost:9283" \
-  --api-key "VOTRE_CLE"
+  --grocy-url "http://ton-serveur:9283" \
+  --api-key "ta-clé-api"
 ```
 
 Utilisez-le simplement :
@@ -185,7 +195,7 @@ N'hésite pas à améliorer le code ! Les PRs sont les bienvenues.
 ### Erreur "Impossible de se connecter à Grocy"
 
 - Vérifiez que Grocy est bien accessible à l'URL fournie
-- Testez dans votre navigateur : `http://localhost:9283/api/system/info`
+- Testez dans votre navigateur : `http://ton-serveur:9283/api/system/info`
 - Vérifiez votre clé API
 
 ### Erreur lors de l'extraction
