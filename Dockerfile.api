@@ -2,10 +2,21 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copier et installer les dépendances
+# Installer ffmpeg et dépendances système
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copier et installer les dépendances Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir flask flask-cors gunicorn
+    pip install --no-cache-dir \
+        flask \
+        flask-cors \
+        gunicorn \
+        yt-dlp \
+        openai-whisper \
+        torch --index-url https://download.pytorch.org/whl/cpu
 
 # Copier le code Python
 COPY *.py ./
@@ -21,4 +32,5 @@ ENV GROCY_URL=http://localhost:9283
 ENV GROCY_API_KEY=""
 
 # Démarrer avec Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--timeout", "120", "--access-logfile", "-", "api:app"]
+# Augmenter le timeout pour les imports Instagram (transcription peut prendre du temps)
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--timeout", "300", "--access-logfile", "-", "api:app"]

@@ -319,6 +319,7 @@
         
         <div class="tabs">
             <button class="tab active" data-tab="url">🔗 URL</button>
+            <button class="tab" data-tab="instagram">📸 Instagram</button>
             <button class="tab" data-tab="file">📁 Fichier</button>
             <button class="tab" data-tab="text">📝 Texte</button>
         </div>
@@ -338,6 +339,26 @@
                 </div>
                 <button type="button" class="secondary" onclick="previewUrl()">👁️ Prévisualiser</button>
                 <button type="submit" class="primary">📥 Importer dans Grocy</button>
+            </form>
+        </div>
+        
+        <!-- Tab Instagram -->
+        <div class="tab-content" id="instagram-tab">
+            <form id="instagram-form">
+                <div class="form-group">
+                    <label for="instagram-url">URL du Reel Instagram</label>
+                    <input 
+                        type="url" 
+                        id="instagram-url" 
+                        name="url" 
+                        placeholder="https://www.instagram.com/reel/..."
+                        required
+                    >
+                    <p style="font-size: 12px; color: #666; margin-top: 8px;">
+                        ⏱️ Le traitement peut prendre 2-3 minutes (téléchargement + transcription haute qualité)
+                    </p>
+                </div>
+                <button type="submit" class="primary">📥 Importer depuis Instagram</button>
             </form>
         </div>
         
@@ -469,6 +490,13 @@
             await importRecipe({ html });
         });
         
+        // Form submission - Instagram
+        document.getElementById('instagram-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('instagram-url').value;
+            await importInstagramReel(url);
+        });
+        
         // Preview URL
         async function previewUrl() {
             const url = document.getElementById('recipe-url').value;
@@ -516,6 +544,37 @@
                 if (data.success) {
                     showStatus(`
                         ✅ ${data.message}<br>
+                        <a href="${data.data.grocy_url}" target="_blank" class="link">🔗 Ouvrir dans Grocy</a>
+                    `, 'success');
+                    hidePreview();
+                } else {
+                    showStatus(`✗ Erreur : ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`✗ Erreur de connexion : ${error.message}`, 'error');
+            } finally {
+                disableButtons(false);
+            }
+        }
+        
+        // Import Instagram Reel
+        async function importInstagramReel(url) {
+            showStatus('<span class="spinner"></span> Téléchargement du Reel... (2-3 minutes)', 'loading');
+            disableButtons(true);
+            
+            try {
+                const response = await fetch('/api/import/instagram', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus(`
+                        ✅ ${data.message}<br>
+                        <small>Créateur: @${data.data.instagram_data.uploader} | Durée: ${data.data.instagram_data.duration}s</small><br>
                         <a href="${data.data.grocy_url}" target="_blank" class="link">🔗 Ouvrir dans Grocy</a>
                     `, 'success');
                     hidePreview();

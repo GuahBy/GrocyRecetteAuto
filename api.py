@@ -178,6 +178,121 @@ def preview_recipe():
             'error': str(e)
         }), 500
 
+@app.route('/api/import/instagram', methods=['POST'])
+def import_instagram_reel():
+    """
+    Importe une recette depuis un Reel Instagram
+    
+    Process:
+    1. Télécharge le Reel et extrait la description
+    2. Transcrit l'audio
+    3. Parse les ingrédients et instructions
+    4. Importe dans Grocy
+    
+    Body JSON:
+    {
+        "url": "https://www.instagram.com/reel/...",
+        "grocy_url": "http://localhost:9283",  // optionnel
+        "grocy_api_key": "..."  // optionnel
+    }
+    """
+    try:
+        from instagram_scraper import InstagramScraper
+        from audio_transcriber import AudioTranscriber
+        from recipe_parser import RecipeParser
+        
+        data = request.get_json()
+        
+        if not data or 'url' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'URL Instagram manquante'
+            }), 400
+        
+        url = data['url']
+        grocy_url = data.get('grocy_url', GROCY_URL)
+        grocy_api_key = data.get('grocy_api_key', GROCY_API_KEY)
+        
+        if not grocy_api_key:
+            return jsonify({
+                'success': False,
+                'error': 'Clé API Grocy manquante'
+            }), 400
+        
+        print(f"\n{'='*60}")
+        print(f"🎬 Import Instagram Reel")
+        print(f"{'='*60}")
+        print(f"URL: {url}")
+        
+        # Étape 1 : Télécharger le Reel
+        print("\n[1/5] Téléchargement du Reel...")
+        scraper = InstagramScraper()
+        reel_data = scraper.download_reel(url)
+        
+        # Étape 2 : Transcrire l'audio
+        print("\n[2/5] Transcription audio...")
+        transcriber = AudioTranscriber(model_name="medium")  # Modèle medium pour meilleure qualité
+        transcription_result = transcriber.transcribe(reel_data['audio_path'], language="fr")
+        transcription_text = transcription_result['text']
+        
+        # Étape 3 : Parser la recette
+        print("\n[3/5] Parsing de la recette...")
+        parser = RecipeParser()
+        recipe_data = parser.parse_recipe(
+            description=reel_data['description'],
+            transcription=transcription_text
+        )
+        
+        # Ajouter les métadonnées Instagram
+        recipe_data['image_url'] = reel_data.get('thumbnail', '')
+        
+        # Étape 4 : Connexion à Grocy
+        print("\n[4/5] Connexion à Grocy...")
+        grocy = GrocyClient(grocy_url, grocy_api_key)
+        
+        if not grocy.test_connection():
+            return jsonify({
+                'success': False,
+                'error': 'Impossible de se connecter à Grocy'
+            }), 500
+        
+        # Étape 5 : Import dans Grocy
+        print("\n[5/5] Import dans Grocy...")
+        recipe_id = grocy.import_recipe(recipe_data)
+        
+        # Nettoyage des fichiers temporaires
+        print("\n🧹 Nettoyage...")
+        scraper.cleanup_files(
+            video_path=reel_data.get('video_path'),
+            audio_path=reel_data.get('audio_path')
+        )
+        
+        print(f"\n✅ Import terminé!")
+        print(f"{'='*60}\n")
+        
+        return jsonify({
+            'success': True,
+            'message': f"Recette '{recipe_data['title']}' importée depuis Instagram",
+            'data': {
+                'recipe_id': recipe_id,
+                'title': recipe_data['title'],
+                'ingredients_count': len(recipe_data['ingredients']),
+                'grocy_url': f"{grocy_url}/#recipe/{recipe_id}",
+                'instagram_data': {
+                    'uploader': reel_data.get('uploader', ''),
+                    'duration': reel_data.get('duration', 0),
+                    'transcription_length': len(transcription_text)
+                }
+            }
+        })
+        
+    except Exception as e:
+        print(f"\n❌ Erreur: {str(e)}\n")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 if __name__ == '__main__':
     # Vérifier que les variables d'environnement sont définies
     if not GROCY_API_KEY:

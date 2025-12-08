@@ -206,7 +206,7 @@ class GrocyClient:
         
         # Pattern pour quantité + unité
         # Exemples: 600g, 2kg, 400ml, 2 cuillères à soupe, 1.5 l
-        pattern = r'^(\d+[\.,]?\d*)\s*(g|kg|mg|ml|cl|dl|l|cuillère|cuillères|cuillere|cuilleres|tasse|tasses|c\.|cs|cc|pièce|pièces|piece|pieces)?s?\s*'
+        pattern = r'^(\d+[\.,]?\d*)\s*(g|kg|mg|ml|cl|dl|l|cuillère|cuillères|cuillere|cuilleres|tasse|tasses|c\.|cs|cc|pièce|pièces|piece|pieces|gousse|gousses)?s?\s*'
         
         match = re.match(pattern, text)
         
@@ -228,14 +228,71 @@ class GrocyClient:
                 'product_name': product_name,
                 'original': ingredient
             }
-        else:
-            # Pas de quantité détectée, utiliser valeurs par défaut
-            return {
-                'amount': 1,
-                'unit': 'piece',
-                'product_name': self._clean_ingredient_name(ingredient),
-                'original': ingredient
-            }
+        
+        # Pas de quantité détectée - chercher les articles "du", "de la", "des"
+        # et assigner des quantités par défaut
+        article_patterns = [
+            (r'^(?:du|de l\')\s*(beurre)', 10, 'g'),  # du beurre = 10g
+            (r'^(?:de la|de l\')\s*(crème|creme)', 10, 'cl'),  # de la crème = 10cl
+            (r'^(?:du|de l\')\s*(lait)', 10, 'cl'),  # du lait = 10cl
+            (r'^(?:de l\'|de la)\s*(huile)', 5, 'cl'),  # de l'huile = 5cl
+            (r'^(?:du|de l\')\s*(sel)', 5, 'g'),  # du sel = 5g
+            (r'^(?:du|de l\')\s*(sucre)', 10, 'g'),  # du sucre = 10g
+            (r'^(?:du|de l\')\s*(fromage)', 50, 'g'),  # du fromage = 50g
+            (r'^(?:de la|de l\')\s*(farine)', 50, 'g'),  # de la farine = 50g
+            (r'^(?:des?)\s*(.*)', 1, 'piece'),  # des X = 1 pièce
+        ]
+        
+        for pattern_str, default_amount, default_unit in article_patterns:
+            match = re.match(pattern_str, text, re.IGNORECASE)
+            if match:
+                product_name = match.group(1).strip()
+                product_name = self._clean_ingredient_name(product_name)
+                return {
+                    'amount': default_amount,
+                    'unit': default_unit,
+                    'product_name': product_name.capitalize(),
+                    'original': ingredient
+                }
+        
+        # Ingrédients sans article ni quantité - assigner valeurs par défaut intelligentes
+        # Ex: "Huile d'olive", "Fleur de sel", "Laurier", "Poivre"
+        default_quantities = {
+            'huile': (5, 'cl'),
+            'beurre': (10, 'g'),
+            'crème': (10, 'cl'),
+            'sel': (5, 'g'),
+            'poivre': (2, 'g'),
+            'laurier': (1, 'piece'),
+            'thym': (1, 'piece'),
+            'romarin': (1, 'piece'),
+            'basilic': (5, 'g'),
+            'persil': (5, 'g'),
+            'coriandre': (5, 'g'),
+            'épice': (2, 'g'),
+            'piment': (1, 'piece'),
+            'ail': (1, 'piece'),
+            'oignon': (1, 'piece'),
+        }
+        
+        text_lower = text.lower()
+        for keyword, (amount, unit) in default_quantities.items():
+            if keyword in text_lower:
+                product_name = self._clean_ingredient_name(text)
+                return {
+                    'amount': amount,
+                    'unit': unit,
+                    'product_name': product_name,
+                    'original': ingredient
+                }
+        
+        # Aucun pattern détecté, utiliser valeurs par défaut
+        return {
+            'amount': 1,
+            'unit': 'piece',
+            'product_name': self._clean_ingredient_name(ingredient),
+            'original': ingredient
+        }
     
     def _normalize_unit(self, unit: str) -> str:
         """
@@ -262,6 +319,8 @@ class GrocyClient:
             'pièces': 'piece',
             'piece': 'piece',
             'pieces': 'piece',
+            'gousse': 'piece',  # Gousse = pièce
+            'gousses': 'piece',
         }
         
         return unit_map.get(unit.lower(), unit)
@@ -361,7 +420,7 @@ class GrocyClient:
     def _clean_ingredient_name(self, ingredient: str) -> str:
         """
         Nettoie le nom d'un ingrédient pour extraire le produit
-        Exemple: "blanc de poulet" -> "Blanc Poulet"
+        Exemple: "blanc de poulet" -> "Poulet Blanc"
         """
         import re
         
@@ -371,9 +430,15 @@ class GrocyClient:
         if len(text) < 2:
             return ingredient
         
-        # Retirer les articles et prépositions au début et dans le texte
-        text = re.sub(r'^(de|d\'|du|des|la|le|les|à|au|aux|en|un|une)\s+', '', text)
-        text = re.sub(r'\s+(de|d\'|du|des|à|au|aux|en)\s+', ' ', text)
+        # Retirer "de" ou "d'" SEULEMENT au début
+        text = re.sub(r'^(?:de|d\')\s+', '', text)
+        
+        # Garder les expressions importantes ensemble
+        # Ne pas séparer "cuisses de canard", "gousse d'ail", "blanc de poulet"
+        # On garde "de" quand il est au milieu
+        
+        # Retirer les articles uniquement au début
+        text = re.sub(r'^(?:la|le|les|un|une|des)\s+', '', text)
         
         # Nettoyer les espaces multiples
         text = re.sub(r'\s+', ' ', text).strip()
@@ -385,13 +450,15 @@ class GrocyClient:
         if not text:
             return ingredient
         
-        # Capitaliser proprement
+        # Capitaliser proprement en gardant les prépositions
         words = text.split()
         result = []
         
-        for word in words:
-            # Ne pas capitaliser "et", "ou" sauf en début
-            if word in ['et', 'ou'] and result:
+        for i, word in enumerate(words):
+            # Ne capitaliser "de" et "d'" que s'ils ne sont pas seuls
+            if word in ['de', "d'"] and i > 0 and i < len(words) - 1:
+                result.append(word)
+            elif word in ['et', 'ou', 'à', 'au', 'aux']:
                 result.append(word)
             else:
                 result.append(word.capitalize())
