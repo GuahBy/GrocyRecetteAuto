@@ -15,7 +15,7 @@ Outil Python pour importer automatiquement des recettes depuis des sites web ou 
 
 ```bash
 # Cloner ou télécharger le projet
-cd grocy-recipe-importer
+cd GrocyRecetteAuto
 
 # Installer les dépendances
 pip install -r requirements.txt
@@ -45,7 +45,7 @@ pip install -r requirements.txt
 ```bash
 python main.py \
   "https://www.marmiton.org/recettes/recette_poulet-au-curry_12345.aspx" \
-  --grocy-url http://localhost:9283 \
+  --grocy-url http://ton-serveur:9283 \
   --api-key VOTRE_CLE_API
 ```
 
@@ -54,7 +54,7 @@ python main.py \
 ```bash
 python main.py \
   "/chemin/vers/recette.html" \
-  --grocy-url http://localhost:9283 \
+  --grocy-url http://ton-serveur:9283 \
   --api-key VOTRE_CLE_API
 ```
 
@@ -63,7 +63,7 @@ python main.py \
 ```bash
 python main.py \
   "https://www.750g.com/recette-tarte-aux-pommes.htm" \
-  --grocy-url http://localhost:9283 \
+  --grocy-url http://ton-serveur:9283 \
   --api-key VOTRE_CLE_API \
   --dry-run
 ```
@@ -113,6 +113,14 @@ python main.py \
   --api-key ta-cle-api
 ```
 
+### Scénario 3: Importer une recette depuis un reels instagram: 
+```bash
+#1. Je trouve une recette sur un reels instagram
+#2. J'appuie sur l'enveloppe pour envoyer le reels
+#3. Je fait copier le lien
+
+  python3 test_instagram_full.py "https://www.instagram.com/reel/recette-géniale"
+```
 ## Intégration Docker
 
 Vous pouvez ajouter ce service à votre docker-compose pour un accès simplifié :
@@ -125,7 +133,7 @@ Vous pouvez ajouter ce service à votre docker-compose pour un accès simplifié
    container_name: recipe-api
    environment:
      - GROCY_URL=http://grocy:80
-     - GROCY_API_KEY=ta-clé-url
+     - GROCY_API_KEY=ta-clé-api
    ports:
      - 5000:5000
    volumes:
