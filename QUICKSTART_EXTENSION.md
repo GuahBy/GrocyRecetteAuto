@@ -11,12 +11,12 @@ cd /mnt/user-data/outputs/grocy-recipe-importer
 pip3 install flask flask-cors
 
 # Démarrer l'API
-export GROCY_URL="http://100.83.155.21:9283"
+export GROCY_URL="http://ton-serveur:9283"
 export GROCY_API_KEY="ta_clé"
 ./start-api.sh
 ```
 
-✅ L'API tourne sur `http://localhost:5000`
+✅ L'API tourne sur `http://ton-server:5000`
 
 ### 2️⃣ Installe l'extension (1 min)
 
@@ -39,8 +39,8 @@ Puis dans Brave :
 1. Clique sur l'icône de l'extension
 2. "⚙️ Configuration"
 3. Remplis :
-   - API : `http://localhost:5000`
-   - Grocy : `http://100.83.155.21:9283`
+   - API : `http://ton-serveur:5000`
+   - Grocy : `http://ton-serveur:9283`
    - Clé : ta clé Grocy
 4. Sauvegarde
 
